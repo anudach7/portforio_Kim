@@ -1,0 +1,224 @@
+<title>Anudech Seehabut — Network</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: full-screen slides, one per scroll gesture; a 3D node network (customer ↔ factory) sits behind and the camera eases to a new view on each slide */
+:root{
+  --bg:#ffffff; --ink:#0f1513; --sub:#55605b; --line:#e6ece9; --accent:#0f6b4f; --accent-2:#1c8f6c; --tint:#f3f8f6;
+  --panel:#ffffff; --shadow:rgba(15,40,30,.10);
+  --display:"Instrument Serif",Georgia,serif; --body:"Manrope",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--body)}
+#scene{position:fixed;inset:0;width:100vw;height:100vh;z-index:0}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:20}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:6;padding-block:18px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;align-items:center;font:600 13px var(--body);letter-spacing:.04em}
+.top span{color:var(--sub);font-weight:500}
+
+.slide{position:relative;z-index:1;min-height:100svh;display:flex;align-items:center;padding-block:96px}
+.inner{width:100%;max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* clean, bright panels */
+.box{max-width:580px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:40px 44px;
+  box-shadow:0 1px 2px var(--shadow),0 30px 60px -30px var(--shadow);position:relative;overflow:hidden}
+.box::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2) 60%,transparent)}
+.right .box{margin-left:auto}
+
+.kicker{font:700 11.5px var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:28px;height:1px;background:var(--accent)}
+h1{font:400 clamp(52px,7.4vw,96px)/.98 var(--display);letter-spacing:-.02em;margin:18px 0 10px;text-wrap:balance}
+.role{font:600 clamp(17px,1.8vw,20px) var(--body);color:var(--ink);margin:0 0 18px}
+.role span{color:var(--accent)}
+h2{font:400 clamp(36px,4.6vw,56px)/1.04 var(--display);margin:14px 0 18px;text-wrap:balance}
+em{color:var(--accent)}
+p{margin:0 0 12px;color:var(--sub)}
+.lead{font-size:clamp(16px,1.6vw,18px);max-width:50ch}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:64px;align-items:center}
+.creds{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0;margin:28px 0 32px;border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:0 1px 2px var(--shadow)}
+.creds div{padding:14px 22px;border-left:1px solid var(--line);font-size:13px;color:var(--sub)}
+.creds div:first-child{border-left:0}
+.creds b{display:block;font:600 15px var(--body);color:var(--ink)}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{font:600 14px var(--body);border-radius:999px;padding:13px 24px;cursor:pointer;text-decoration:none;border:1px solid var(--accent);transition:transform .3s,box-shadow .3s}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.ghost{background:var(--panel);color:var(--accent)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px -12px var(--shadow)}
+.photo{position:relative;justify-self:end;width:100%;max-width:380px}
+.photo .frame{aspect-ratio:4/5;border-radius:24px;overflow:hidden;background:var(--tint);border:1px solid var(--line);box-shadow:0 2px 4px var(--shadow),0 40px 80px -36px rgba(15,40,30,.28)}
+.photo img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}
+.photo .ring{position:absolute;inset:-14px;border:1px solid var(--line);border-radius:30px;z-index:-1}
+.photo .tag{position:absolute;left:-28px;bottom:32px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:0 18px 36px -18px var(--shadow);font-size:13px;color:var(--sub)}
+.photo .tag b{display:block;color:var(--ink);font-size:14px}
+.photo .tag i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-2);margin-right:6px;box-shadow:0 0 0 4px rgba(28,143,108,.15)}
+
+.rows{list-style:none;margin:16px 0 0;padding:0}
+.rows li{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.rows b{font-weight:700;color:var(--accent)}.rows span{color:var(--sub)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chips span{border:1px solid var(--line);background:var(--tint);padding:6px 13px;border-radius:999px;font-size:13.5px;font-weight:500}
+.mail{font:400 clamp(28px,4.2vw,48px)/1.1 var(--display);color:var(--ink);word-break:break-all;user-select:all;margin:8px 0 14px}
+button.btn:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.dots{position:fixed;right:max(24px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:grid;gap:16px;z-index:5}
+.dots a{width:8px;height:8px;border-radius:50%;background:var(--line);display:block;transition:all .5s cubic-bezier(.22,1,.36,1)}
+.dots a.on{background:var(--accent);height:26px;border-radius:6px}
+
+/* slide transitions: content eases in as its slide arrives */
+.pre{opacity:0;transform:translateY(40px)}
+.rv{transition:opacity 1.2s cubic-bezier(.22,1,.36,1),transform 1.2s cubic-bezier(.22,1,.36,1)}
+.d1{transition-delay:.12s}.d2{transition-delay:.24s}
+@media (prefers-reduced-motion:reduce){.pre{opacity:1;transform:none}.rv,.btn,.dots a{transition:none}}
+@media (max-width:860px){
+  .dots,.top span{display:none}.slide{min-height:auto;padding-block:72px}
+  .hero{grid-template-columns:1fr;gap:40px}.photo{justify-self:center;max-width:300px}.photo .tag{left:-8px}
+  .creds{grid-template-columns:1fr 1fr 1fr}.creds div{padding:12px}
+  .box{padding:28px 24px}.rows li{grid-template-columns:1fr;gap:2px}
+}
+</style>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="progress"></div>
+<div class="top"><b>Anudech Seehabut</b><span>Program Management · Cal-Comp Electronics</span></div>
+<nav class="dots" aria-label="Sections"><a href="#s0" aria-label="Intro"></a><a href="#s1" aria-label="Customer"></a><a href="#s2" aria-label="Build"></a><a href="#s3" aria-label="Control"></a><a href="#s4" aria-label="Before"></a><a href="#s5" aria-label="Contact"></a></nav>
+
+<section class="slide" id="s0"><div class="inner hero">
+  <div>
+    <div class="kicker">Portfolio</div>
+    <h1>Anudech Seehabut</h1>
+    <p class="role">Senior Engineer — <span>Program Management</span></p>
+    <p class="lead">I lead new product introduction at Cal-Comp Electronics (Thailand), taking customer requirements through Pre-BOM, material control and trial-run builds into mass production, on schedule.</p>
+    <div class="creds">
+      <div><b>~5 years</b>Electronics mfg.</div>
+      <div><b>Head of DCC</b>EN / ECN</div>
+      <div><b>B.Eng.</b>Mechatronics</div>
+    </div>
+    <div class="cta"><a class="btn primary" href="#s1">View experience</a><a class="btn ghost" href="#s5">Contact me</a></div>
+  </div>
+  <div class="photo">
+    <div class="ring"></div>
+    <div class="frame"><img src="Kim.jpg" alt="Portrait of Anudech Seehabut"></div>
+    <div class="tag"><b><i></i>Cal-Comp Electronics</b>Samut Sakhon, Thailand</div>
+  </div>
+</div></section>
+
+<section class="slide right" id="s1"><div class="inner"><div class="box rv">
+  <div class="kicker">The window · since Mar 2023</div>
+  <h2>One clear contact for the <em>customer</em>.</h2>
+  <p>I am the main contact window on the customer side. I clarify requirements, build instructions and material issues, then release model instructions and Engineering Notices into our system.</p>
+</div></div></section>
+
+<section class="slide" id="s2"><div class="inner"><div class="box rv">
+  <div class="kicker">The build</div>
+  <h2>From Pre-BOM to <em>trial run</em>.</h2>
+  <ul class="rows">
+    <li><b>Pre-BOM</b><span>Long-lead material purchased before kickoff</span></li>
+    <li><b>Material</b><span>NPI shipments, delivery status and availability</span></li>
+    <li><b>Trial run</b><span>On-time pre-pilot builds with cost assessment</span></li>
+    <li><b>MP</b><span>EBOM to manufacturing BOM, MP regrading</span></li>
+  </ul>
+</div></div></section>
+
+<section class="slide right" id="s3"><div class="inner"><div class="box rv">
+  <div class="kicker">Control &amp; automation</div>
+  <h2>Head of <em>DCC</em>, builder of automation.</h2>
+  <p>I lead EN/ECN release and control with full traceability and hold the EN turnaround KPI. With AI, ODBC and Oracle ERP data I auto-create BOMs and design dashboards that show trial and MP readiness live.</p>
+</div></div></section>
+
+<section class="slide" id="s4"><div class="inner"><div class="box rv">
+  <div class="kicker">Foundation · 2022 – 2023</div>
+  <h2>Process Engineer, <em>Phetchaburi</em>.</h2>
+  <p>4M1E control, UPH and quality improvement, corrective action, operator training and equipment qualification.</p>
+  <div class="chips"><span>NPI</span><span>BOM / Pre-BOM</span><span>EN / ECN</span><span>AI automation</span><span>Oracle ERP</span><span>SAP</span><span>Excel</span><span>PLC</span><span>B.Eng. Mechatronics (studying)</span></div>
+</div></div></section>
+
+<section class="slide right" id="s5"><div class="inner"><div class="box rv">
+  <div class="kicker">Contact</div>
+  <h2>Let's <em>connect</em>.</h2>
+  <div class="mail" id="addr">anudachkim@gmail.com</div>
+  <p>+66 98 901 7909 · Samut Sakhon, Thailand</p>
+  <button type="button" class="btn primary" id="copy">Copy email</button>
+</div></div></section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els=[].slice.call(document.querySelectorAll('.rv'));
+  els.forEach(function(el){if(!reduce&&el.getBoundingClientRect().top>innerHeight)el.classList.add('pre')});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.remove('pre');io.unobserve(e.target)}})},{threshold:.3});
+  els.forEach(function(el){io.observe(el)});
+  document.getElementById('copy').addEventListener('click',function(){var b=this;navigator.clipboard.writeText('anudachkim@gmail.com').then(function(){b.textContent='Copied'},function(){getSelection().selectAllChildren(document.getElementById('addr'));b.textContent='Selected — press Ctrl+C'})});
+
+  var slides=[].slice.call(document.querySelectorAll('.slide')),dots=[].slice.call(document.querySelectorAll('.dots a')),bar=document.getElementById('progress');
+  function progress(){var y=scrollY+innerHeight/2,idx=0;slides.forEach(function(s,i){if(y>=s.offsetTop)idx=i+Math.min(1,(y-s.offsetTop)/s.offsetHeight)-.5});return Math.max(0,Math.min(slides.length-1,idx))}
+  function onScroll(){var h=document.documentElement;bar.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';var c=Math.round(progress());dots.forEach(function(a,i){a.classList.toggle('on',c===i)})}
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  // one slide per scroll gesture, eased
+  var busy=false;
+  function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+  function goTo(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    var from=scrollY,to=slides[i].offsetTop,start=null,dur=1100;
+    if(reduce){scrollTo(0,to);return}
+    busy=true;
+    function step(ts){if(!start)start=ts;var t=Math.min(1,(ts-start)/dur);scrollTo(0,from+(to-from)*ease(t));if(t<1)requestAnimationFrame(step);else setTimeout(function(){busy=false},120)}
+    requestAnimationFrame(step);
+  }
+  function current(){return Math.round(progress())}
+  var desktop=matchMedia('(min-width: 861px) and (pointer: fine)');
+  addEventListener('wheel',function(e){
+    if(!desktop.matches)return;
+    e.preventDefault();
+    if(busy||Math.abs(e.deltaY)<4)return;
+    goTo(current()+(e.deltaY>0?1:-1));
+  },{passive:false});
+  addEventListener('keydown',function(e){
+    if(!desktop.matches)return;
+    if(['ArrowDown','PageDown',' '].indexOf(e.key)>-1){e.preventDefault();if(!busy)goTo(current()+1)}
+    if(['ArrowUp','PageUp'].indexOf(e.key)>-1){e.preventDefault();if(!busy)goTo(current()-1)}
+  });
+  [].slice.call(document.querySelectorAll('a[href^="#s"]')).forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();goTo(slides.indexOf(document.querySelector(a.getAttribute('href'))))})});
+
+  if(!window.THREE)return;
+  var canvas=document.getElementById('scene');
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  var scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,.1,100);
+  var g=new THREE.Group();scene.add(g);
+  var N=110,pts=[],R=3.2;
+  for(var i=0;i<N;i++){var phi=Math.acos(1-2*(i+.5)/N),th=Math.PI*(1+Math.sqrt(5))*i;pts.push(new THREE.Vector3(R*Math.cos(th)*Math.sin(phi),R*Math.sin(th)*Math.sin(phi),R*Math.cos(phi)))}
+  var dotGeo=new THREE.SphereGeometry(.045,10,10);
+  pts.forEach(function(p,i){var m=new THREE.Mesh(dotGeo,new THREE.MeshBasicMaterial({color:i%9===0?0x0f6b4f:0xa9bab3}));m.position.copy(p);if(i%9===0)m.scale.setScalar(2.2);g.add(m)});
+  var lp=[];
+  for(var a=0;a<N;a++)for(var b=a+1;b<N;b++)if(pts[a].distanceTo(pts[b])<1.05)lp.push(pts[a].x,pts[a].y,pts[a].z,pts[b].x,pts[b].y,pts[b].z);
+  var lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3));
+  g.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x0f6b4f,transparent:true,opacity:.14})));
+  g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(1.1,1),new THREE.MeshBasicMaterial({color:0x0f6b4f,wireframe:true,transparent:true,opacity:.28})));
+
+  // camera stop per slide: [x offset, z distance, rotation, opacity]; hero keeps the network soft behind the photo
+  var stops=[[-0.5,14,0,.45],[-2.8,8,1.1,1],[2.8,7,2.2,1],[-2.6,6.5,3.3,1],[2.6,8.5,4.4,1],[-2.4,11,5.6,1]];
+  function size(){renderer.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
+  addEventListener('resize',size);size();
+  var cx=stops[0][0],cz=stops[0][1],cr=0,co=stops[0][3],t0=performance.now();
+  function lerp(a,b,t){return a+(b-a)*t}
+  function tick(now){
+    var p=progress(),i=Math.floor(p),f=p-i,A=stops[i],B=stops[Math.min(i+1,stops.length-1)];
+    f=f*f*(3-2*f);
+    var mobile=innerWidth<860;
+    var tx=mobile?0:lerp(A[0],B[0],f),tz=lerp(A[1],B[1],f),tr=lerp(A[2],B[2],f),to=mobile?.35:lerp(A[3],B[3],f);
+    var k=reduce?1:.04;cx+=(tx-cx)*k;cz+=(tz-cz)*k;cr+=(tr-cr)*k;co+=(to-co)*k;
+    g.position.x=cx;g.rotation.y=cr+(reduce?0:(now-t0)*.00004);g.rotation.x=.3;
+    canvas.style.opacity=co;
+    cam.position.set(0,0,cz);cam.lookAt(0,0,0);
+    renderer.render(scene,cam);
+    if(!reduce)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  if(reduce)addEventListener('scroll',function(){requestAnimationFrame(tick)},{passive:true});
+})();
+</script>
